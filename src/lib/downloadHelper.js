@@ -70,4 +70,6 @@ class DownloadHelper {
   }
 }
 
-export default new DownloadHelper();
+const downloadHelper = new DownloadHelper();
+
+export default downloadHelper;

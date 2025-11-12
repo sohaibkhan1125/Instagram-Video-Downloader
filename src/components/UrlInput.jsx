@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link, AlertCircle, CheckCircle, Clipboard, X, Video, FileImage, BookOpen, Play } from 'lucide-react';
+import { Link, AlertCircle, Clipboard, X, Video, FileImage, BookOpen, Play } from 'lucide-react';
 import apiClient from '../lib/apiClient';
 
 const UrlInput = ({ onUrlSubmit, isLoading }) => {

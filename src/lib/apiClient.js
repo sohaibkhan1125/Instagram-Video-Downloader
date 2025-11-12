@@ -40,11 +40,11 @@ class InstagramDownloader {
    */
   extractUsernameFromUrl(url) {
     // Instagram pattern
-    const instagramMatch = url.match(/instagram\.com\/([^\/]+)\/(p|reel|tv)\//);
+    const instagramMatch = url.match(/instagram\.com\/([^/]+)\/(p|reel|tv)\//);
     if (instagramMatch) return instagramMatch[1];
     
     // TikTok pattern
-    const tiktokMatch = url.match(/tiktok\.com\/@([^\/]+)\/video\//);
+    const tiktokMatch = url.match(/tiktok\.com\/@([^/]+)\/video\//);
     if (tiktokMatch) return tiktokMatch[1];
     
     return null;
@@ -367,4 +367,6 @@ class InstagramDownloader {
   }
 }
 
-export default new InstagramDownloader();
+const instagramDownloader = new InstagramDownloader();
+
+export default instagramDownloader;

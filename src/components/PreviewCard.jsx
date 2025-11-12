@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, Play, Pause, Volume2, VolumeX, Maximize, User, Clock, FileText, Image } from 'lucide-react';
+import { Download, User, Clock, FileText, Image } from 'lucide-react';
 import VideoPlayer from './VideoPlayer';
 import QualitySelector from './QualitySelector';
 import downloadHelper from '../lib/downloadHelper';
 
 const PreviewCard = ({ videoData, onDownload, isDownloading, downloadProgress, selectedType }) => {
   const [selectedQuality, setSelectedQuality] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
 
   // Set default quality when data loads
   React.useEffect(() => {
@@ -15,12 +14,6 @@ const PreviewCard = ({ videoData, onDownload, isDownloading, downloadProgress, s
       setSelectedQuality(videoData.qualities[0]);
     }
   }, [videoData, selectedQuality]);
-
-  const handleDownload = () => {
-    if (selectedQuality && onDownload) {
-      onDownload(selectedQuality);
-    }
-  };
 
   const handleQualityDownload = (quality) => {
     if (onDownload) {
@@ -55,7 +48,7 @@ const PreviewCard = ({ videoData, onDownload, isDownloading, downloadProgress, s
           <div className="relative">
             <img
               src={videoData.thumbnail || selectedQuality?.url || videoData.qualities?.[0]?.url}
-              alt={`Photo by ${videoData.username}`}
+              alt={videoData.username ? `Uploaded by ${videoData.username}` : 'Content preview'}
               className="w-full aspect-video object-cover"
               onError={(e) => {
                 e.target.src = 'https://via.placeholder.com/400x400/6366f1/ffffff?text=Photo+Preview';
@@ -84,7 +77,6 @@ const PreviewCard = ({ videoData, onDownload, isDownloading, downloadProgress, s
           <VideoPlayer
             src={selectedQuality?.url || videoData.qualities?.[0]?.url}
             thumbnail={videoData.thumbnail}
-            onPlayPause={setIsPlaying}
             className="w-full aspect-video"
           />
         )}

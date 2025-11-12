@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Save, Navigation, Type, Image, Trash2, Upload, Eye, CheckCircle } from 'lucide-react';
+import { Save, Navigation, Type, Image, Trash2, Upload, CheckCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const NavbarManagement = () => {
