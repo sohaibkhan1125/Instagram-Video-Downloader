@@ -7,7 +7,10 @@ import 'font-awesome/css/font-awesome.css';
 import 'froala-editor/js/third_party/font_awesome.min.js';
 import './ContentEditor.css';
 
+const FROALA_TRIAL_KEY = 'nQE2uG3B1F1nmnspC5qpH3B3C11A6D5F5F5G4A-8A-7A2cefE3B2F3C2G2ilva1EAJLQCVLUVBf1NXNRSSATEXA-62WVLGKF2G2H2G1I4B3B2B8D7F6==';
+
 const froalaConfig = {
+	key: FROALA_TRIAL_KEY,
 	placeholderText: 'Type or paste your content here!',
 	toolbarButtons: [
 		['undo', 'redo', '|', 'bold', 'italic', 'underline', 'strikeThrough'],

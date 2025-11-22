@@ -1,8 +1,65 @@
+const DEFAULT_API_KEY = 'nQE2uG3B1F1nmnspC5qpH3B3C11A6D5F5F5G4A-8A-7A2cefE3B2F3C2G2ilva1EAJLQCVLUVBf1NXNRSSATEXA-62WVLGKF2G2H2G1I4B3B2B8D7F6==';
+const API_KEY_STORAGE_KEY = 'rapidApiKey';
+
 class InstagramDownloader {
   constructor() {
-    this.apiKey = '90f18d95c0msh12900f8ecdc4a4bp1d499ejsn6903806411b3';
+    this.apiKey = DEFAULT_API_KEY;
     this.apiHost = 'snap-video3.p.rapidapi.com';
     this.baseURL = 'https://snap-video3.p.rapidapi.com';
+    this.boundHandleApiKeyChanged = this.handleApiKeyChanged.bind(this);
+
+    if (typeof window !== 'undefined' && window?.localStorage) {
+      const storedKey = window.localStorage.getItem(API_KEY_STORAGE_KEY);
+      if (storedKey) {
+        this.apiKey = storedKey;
+      } else {
+        window.localStorage.setItem(API_KEY_STORAGE_KEY, this.apiKey);
+      }
+
+      window.addEventListener('apiKeyChanged', this.boundHandleApiKeyChanged);
+    }
+  }
+
+  handleApiKeyChanged(event) {
+    const newKey = event?.detail?.apiKey;
+    if (newKey) {
+      this.setApiKey(newKey);
+    }
+  }
+
+  /**
+   * Get the current API key, preferring the latest value from localStorage if available.
+   * @returns {string} RapidAPI key
+   */
+  getApiKey() {
+    if (typeof window !== 'undefined' && window?.localStorage) {
+      const storedKey = window.localStorage.getItem(API_KEY_STORAGE_KEY);
+      if (storedKey && storedKey !== this.apiKey) {
+        this.apiKey = storedKey;
+      }
+    }
+    return this.apiKey || DEFAULT_API_KEY;
+  }
+
+  /**
+   * Persist a new API key value.
+   * @param {string} newKey - RapidAPI key
+   */
+  setApiKey(newKey) {
+    if (!newKey) return;
+
+    this.apiKey = newKey;
+
+    if (typeof window !== 'undefined' && window?.localStorage) {
+      window.localStorage.setItem(API_KEY_STORAGE_KEY, newKey);
+    }
+  }
+
+  /**
+   * Reset the API key to the default trial key.
+   */
+  resetApiKeyToDefault() {
+    this.setApiKey(DEFAULT_API_KEY);
   }
 
   /**
@@ -90,11 +147,12 @@ class InstagramDownloader {
    */
   async fetchFromNewAPI(url) {
     const apiUrl = `https://${this.apiHost}/download`;
+    const apiKey = this.getApiKey();
 
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
-        'x-rapidapi-key': this.apiKey,
+        'x-rapidapi-key': apiKey,
         'x-rapidapi-host': this.apiHost,
         'Content-Type': 'application/x-www-form-urlencoded'
       },
@@ -370,3 +428,4 @@ class InstagramDownloader {
 const instagramDownloader = new InstagramDownloader();
 
 export default instagramDownloader;
+export { DEFAULT_API_KEY, API_KEY_STORAGE_KEY };
