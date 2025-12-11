@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Save, Type, FileText, CheckCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { supabase } from '../../lib/supabaseClient';
 
 const HeroManagement = () => {
   const [heroTitle, setHeroTitle] = useState('');
@@ -9,23 +10,39 @@ const HeroManagement = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Load saved data from localStorage on component mount
+  // Load saved data from Supabase on component mount
   useEffect(() => {
-    const savedTitle = localStorage.getItem('heroTitle');
-    const savedDescription = localStorage.getItem('heroDescription');
-    
-    if (savedTitle) {
-      setHeroTitle(savedTitle);
-    } else {
-      setHeroTitle('Download Instagram & TikTok\nVideos & Reels'); // Default title
-    }
-    
-    if (savedDescription) {
-      setHeroDescription(savedDescription);
-    } else {
-      setHeroDescription('Save your favorite Instagram posts, reels, stories, photos and TikTok videos in high quality. Fast, secure, and completely free.'); // Default description
-    }
+    loadHeroContent();
   }, []);
+
+  const loadHeroContent = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('website_content_instagram_downloader')
+        .select('hero_title, hero_description')
+        .limit(1)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.warn('Error loading hero content:', error);
+        return;
+      }
+
+      if (data) {
+        setHeroTitle(data.hero_title || 'Download Instagram & TikTok\nVideos & Reels');
+        setHeroDescription(data.hero_description || 'Save your favorite Instagram posts, reels, stories, photos and TikTok videos in high quality. Fast, secure, and completely free.');
+      } else {
+        // Set defaults if no data exists
+        setHeroTitle('Download Instagram & TikTok\nVideos & Reels');
+        setHeroDescription('Save your favorite Instagram posts, reels, stories, photos and TikTok videos in high quality. Fast, secure, and completely free.');
+      }
+    } catch (error) {
+      console.warn('Error loading hero content:', error);
+      // Set defaults on error
+      setHeroTitle('Download Instagram & TikTok\nVideos & Reels');
+      setHeroDescription('Save your favorite Instagram posts, reels, stories, photos and TikTok videos in high quality. Fast, secure, and completely free.');
+    }
+  };
 
   // Handle title change
   const handleTitleChange = (e) => {
@@ -46,28 +63,42 @@ const HeroManagement = () => {
     setIsSaving(true);
     
     try {
-      // Save to localStorage
-      localStorage.setItem('heroTitle', heroTitle);
-      localStorage.setItem('heroDescription', heroDescription);
-      
-      // Dispatch custom events for real-time updates
-      window.dispatchEvent(new CustomEvent('heroTitleChanged', {
-        detail: { title: heroTitle }
-      }));
-      
-      window.dispatchEvent(new CustomEvent('heroDescriptionChanged', {
-        detail: { description: heroDescription }
-      }));
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Check if record exists
+      const { data: existingData, error: fetchError } = await supabase
+        .from('website_content_instagram_downloader')
+        .select('id')
+        .limit(1)
+        .single();
+
+      let result;
+      if (existingData) {
+        // Update existing record
+        result = await supabase
+          .from('website_content_instagram_downloader')
+          .update({
+            hero_title: heroTitle,
+            hero_description: heroDescription,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingData.id);
+      } else {
+        // Insert new record
+        result = await supabase
+          .from('website_content_instagram_downloader')
+          .insert([{
+            hero_title: heroTitle,
+            hero_description: heroDescription
+          }]);
+      }
+
+      if (result.error) throw result.error;
       
       toast.success('Hero section updated successfully!');
       setHasChanges(false);
       
     } catch (error) {
       console.error('Error saving hero section:', error);
-      toast.error('Failed to save changes. Please try again.');
+      toast.error('Failed to save changes: ' + error.message);
     } finally {
       setIsSaving(false);
     }

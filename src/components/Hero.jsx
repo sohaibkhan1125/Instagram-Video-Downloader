@@ -2,41 +2,64 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Download, Link, Sparkles } from 'lucide-react';
 import UrlInput from './UrlInput';
+import { supabase } from '../lib/supabaseClient';
 
 const Hero = ({ onUrlSubmit, isLoading }) => {
   const [heroTitle, setHeroTitle] = useState('Download Instagram & TikTok\nVideos & Reels');
   const [heroDescription, setHeroDescription] = useState('Save your favorite Instagram posts, reels, stories, photos and TikTok videos in high quality. Fast, secure, and completely free.');
 
-  // Load saved data from localStorage on component mount
+  // Load saved data from Supabase and subscribe to real-time updates
   useEffect(() => {
-    const savedTitle = localStorage.getItem('heroTitle');
-    const savedDescription = localStorage.getItem('heroDescription');
-    
-    if (savedTitle) {
-      setHeroTitle(savedTitle);
-    }
-    
-    if (savedDescription) {
-      setHeroDescription(savedDescription);
-    }
-  }, []);
+    // Load initial content
+    const loadHeroContent = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('website_content_instagram_downloader')
+          .select('hero_title, hero_description')
+          .limit(1)
+          .single();
 
-  // Listen for real-time updates
-  useEffect(() => {
-    const handleTitleChange = (event) => {
-      setHeroTitle(event.detail.title);
+        if (error && error.code !== 'PGRST116') {
+          console.warn('Error loading hero content:', error);
+          return;
+        }
+
+        if (data) {
+          setHeroTitle(data.hero_title || 'Download Instagram & TikTok\nVideos & Reels');
+          setHeroDescription(data.hero_description || 'Save your favorite Instagram posts, reels, stories, photos and TikTok videos in high quality. Fast, secure, and completely free.');
+        }
+      } catch (error) {
+        console.warn('Error loading hero content:', error);
+      }
     };
 
-    const handleDescriptionChange = (event) => {
-      setHeroDescription(event.detail.description);
-    };
+    loadHeroContent();
 
-    window.addEventListener('heroTitleChanged', handleTitleChange);
-    window.addEventListener('heroDescriptionChanged', handleDescriptionChange);
+    // Subscribe to real-time changes
+    const subscription = supabase
+      .channel('public:website_content_instagram_downloader')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'website_content_instagram_downloader'
+        },
+        (payload) => {
+          if (payload.new) {
+            if (payload.new.hero_title !== undefined) {
+              setHeroTitle(payload.new.hero_title);
+            }
+            if (payload.new.hero_description !== undefined) {
+              setHeroDescription(payload.new.hero_description);
+            }
+          }
+        }
+      )
+      .subscribe();
 
     return () => {
-      window.removeEventListener('heroTitleChanged', handleTitleChange);
-      window.removeEventListener('heroDescriptionChanged', handleDescriptionChange);
+      supabase.removeChannel(subscription);
     };
   }, []);
 

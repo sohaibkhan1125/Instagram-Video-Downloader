@@ -6,8 +6,10 @@ import 'froala-editor/js/plugins.pkgd.min.js';
 import 'font-awesome/css/font-awesome.css';
 import 'froala-editor/js/third_party/font_awesome.min.js';
 import './ContentEditor.css';
+import { supabase } from '../../lib/supabaseClient';
 
 const FROALA_TRIAL_KEY = 'nQE2uG3B1F1nmnspC5qpH3B3C11A6D5F5F5G4A-8A-7A2cefE3B2F3C2G2ilva1EAJLQCVLUVBf1NXNRSSATEXA-62WVLGKF2G2H2G1I4B3B2B8D7F6==';
+const SLUG = 'homepage_text'; // Specific slug for Instagram downloader homepage content
 
 const froalaConfig = {
 	key: FROALA_TRIAL_KEY,
@@ -32,22 +34,21 @@ const ContentManagement = () => {
 
 	const loadContent = async () => {
 		try {
-			const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-			const isDevelopment = process.env.NODE_ENV === 'development';
-			
-			if (!isDevelopment || process.env.REACT_APP_API_URL) {
-				const response = await fetch(`${API_BASE_URL}/api/settings`);
-				if (response.ok) {
-					const data = await response.json();
-					setContent(data.content || '');
-					return;
-				}
+			// Fetch row with specific slug
+			const { data, error } = await supabase
+				.from('website_content')
+				.select('*')
+				.eq('slug', SLUG)
+				.single();
+
+			if (error && error.code !== 'PGRST116') {
+				console.warn('Error loading content from Supabase:', error);
+				return;
 			}
-			
-			const savedSettings = localStorage.getItem('admin_settings');
-			if (savedSettings) {
-				const data = JSON.parse(savedSettings);
-				setContent(data.content || '');
+
+			if (data && data.content) {
+				// Content is stored directly as HTML string in this row
+				setContent(data.content);
 			}
 		} catch (error) {
 			console.warn('Error loading content:', error);
@@ -60,37 +61,39 @@ const ContentManagement = () => {
 		setSuccess(null);
 
 		try {
-			const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-			const isDevelopment = process.env.NODE_ENV === 'development';
-			
-			const settingsData = {
-				maintenance: false,
-				title: "PixelArt Converter",
-				content: content
-			};
+			// Check if row with this slug exists
+			const { data: existingData, error: fetchError } = await supabase
+				.from('website_content')
+				.select('*')
+				.eq('slug', SLUG)
+				.single();
 
-			if (!isDevelopment || process.env.REACT_APP_API_URL) {
-				const response = await fetch(`${API_BASE_URL}/api/settings`, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify(settingsData),
-				});
-
-				if (response.ok) {
-					setSuccess('Content saved successfully!');
-					localStorage.setItem('admin_settings', JSON.stringify(settingsData));
-					window.dispatchEvent(new CustomEvent('settingsUpdated', { detail: settingsData }));
-				} else {
-					throw new Error('Failed to save content');
-				}
+			let result;
+			if (existingData) {
+				// Update existing row
+				result = await supabase
+					.from('website_content')
+					.update({
+						content: content,
+						updated_at: new Date().toISOString()
+					})
+					.eq('slug', SLUG);
 			} else {
-				localStorage.setItem('admin_settings', JSON.stringify(settingsData));
-				setSuccess('Content saved to localStorage!');
-				window.dispatchEvent(new CustomEvent('settingsUpdated', { detail: settingsData }));
+				// Insert new row
+				result = await supabase
+					.from('website_content')
+					.insert([{
+						slug: SLUG,
+						content: content
+					}]);
 			}
+
+			if (result.error) throw result.error;
+
+			setSuccess('Content saved successfully to Supabase!');
+
 		} catch (error) {
+			console.error('Save error:', error);
 			setError('Error saving content: ' + error.message);
 		} finally {
 			setSaving(false);
