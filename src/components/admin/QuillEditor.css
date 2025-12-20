@@ -1,0 +1,289 @@
+/* Scoped to .quill-editor-wrapper to prevent global changes */
+.quill-editor-wrapper {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+    --toolbar-bg: #ffffff;
+    --editor-bg: #ffffff;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --error-color: #ef4444;
+    --success-color: #22c55e;
+    
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    /* overflow: hidden; Removed to fit in container */
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.quill-editor-wrapper.dark-mode {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --border-color: #334155;
+    --toolbar-bg: #1e293b;
+    --editor-bg: #0f172a;
+}
+
+/* Header */
+.quill-editor-wrapper header {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+    z-index: 10;
+}
+
+.quill-editor-wrapper .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--primary-color);
+}
+
+.quill-editor-wrapper .header-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Buttons */
+.quill-editor-wrapper .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.quill-editor-wrapper .btn:hover {
+    background: var(--bg-tertiary);
+    transform: translateY(-1px);
+}
+
+.quill-editor-wrapper .btn-primary {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.quill-editor-wrapper .btn-primary:hover {
+    background: var(--primary-hover);
+}
+
+.quill-editor-wrapper .btn-icon {
+    padding: 0.5rem;
+    width: 36px;
+    height: 36px;
+    justify-content: center;
+}
+
+/* Editor Container */
+.quill-editor-wrapper .editor-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin: 0; /* Integrated layout */
+    background: var(--editor-bg);
+    /* border-radius: 8px; managed by wrapper */
+    /* box-shadow: var(--shadow-md); managed by wrapper */
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+/* Quill Overrides */
+.quill-editor-wrapper .ql-toolbar.ql-snow {
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--toolbar-bg);
+    padding: 12px;
+}
+
+.quill-editor-wrapper .ql-container.ql-snow {
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    background: var(--editor-bg);
+    color: var(--text-primary);
+}
+
+.quill-editor-wrapper .ql-editor {
+    padding: 2rem;
+    min-height: 500px;
+    overflow-y: auto;
+}
+
+.quill-editor-wrapper .ql-editor.ql-blank::before {
+    color: var(--text-secondary);
+    font-style: normal;
+}
+
+/* Dark Mode for Quill */
+.quill-editor-wrapper.dark-mode .ql-stroke {
+    stroke: var(--text-secondary);
+}
+
+.quill-editor-wrapper.dark-mode .ql-fill {
+    fill: var(--text-secondary);
+}
+
+.quill-editor-wrapper.dark-mode .ql-picker {
+    color: var(--text-secondary);
+}
+
+.quill-editor-wrapper.dark-mode .ql-picker-options {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.quill-editor-wrapper.dark-mode .ql-picker-item:hover {
+    color: var(--primary-color);
+}
+
+/* Stats Bar */
+.quill-editor-wrapper .stats-bar {
+    padding: 0.75rem 1.5rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.quill-editor-wrapper .stats-group {
+    display: flex;
+    gap: 15px;
+}
+
+/* Modal */
+.quill-editor-wrapper .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+}
+
+.quill-editor-wrapper .modal-content {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+}
+
+.quill-editor-wrapper .modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.quill-editor-wrapper .modal-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.quill-editor-wrapper .modal-body {
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    background: #1e1e1e;
+}
+
+.quill-editor-wrapper .code-output {
+    width: 100%;
+    height: 500px;
+    overflow: auto;
+    padding: 1.5rem;
+    background: transparent;
+    color: #d4d4d4;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    border: none;
+    resize: none;
+}
+
+/* Fullscreen overrides */
+.quill-editor-wrapper.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    border-radius: 0;
+    z-index: 1000;
+    background: var(--bg-secondary);
+}
+
+.quill-editor-wrapper.fullscreen .editor-container {
+    height: calc(100vh - 120px); /* Approx */
+}
+
+/* Scrollbars */
+.quill-editor-wrapper ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.quill-editor-wrapper ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.quill-editor-wrapper ::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+.quill-editor-wrapper ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}

@@ -1,40 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import FroalaEditorComponent from 'react-froala-wysiwyg';
-import 'froala-editor/css/froala_style.min.css';
-import 'froala-editor/css/froala_editor.pkgd.min.css';
-import 'froala-editor/js/plugins.pkgd.min.js';
-import 'font-awesome/css/font-awesome.css';
-import 'froala-editor/js/third_party/font_awesome.min.js';
-import './ContentEditor.css';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabaseClient';
+import QuillEditor from './QuillEditor';
 
-const FROALA_TRIAL_KEY = 'nQE2uG3B1F1nmnspC5qpH3B3C11A6D5F5F5G4A-8A-7A2cefE3B2F3C2G2ilva1EAJLQCVLUVBf1NXNRSSATEXA-62WVLGKF2G2H2G1I4B3B2B8D7F6==';
 const SLUG = 'homepage_text'; // Specific slug for Instagram downloader homepage content
-
-const froalaConfig = {
-	key: FROALA_TRIAL_KEY,
-	placeholderText: 'Type or paste your content here!',
-	toolbarButtons: [
-		['undo', 'redo', '|', 'bold', 'italic', 'underline', 'strikeThrough'],
-		['paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent'],
-		['insertLink', 'insertTable', 'quote', 'html']
-	],
-	charCounterCount: true
-};
 
 const ContentManagement = () => {
 	const [content, setContent] = useState('');
+	const [editorKey, setEditorKey] = useState(0); // To force re-render on reset
 	const [saving, setSaving] = useState(false);
 	const [success, setSuccess] = useState(null);
 	const [error, setError] = useState(null);
 
-	useEffect(() => {
-		loadContent();
-	}, []);
-
-	const loadContent = async () => {
+	const loadContent = useCallback(async () => {
 		try {
-			// Fetch row with specific slug
 			const { data, error } = await supabase
 				.from('website_content')
 				.select('*')
@@ -47,22 +25,26 @@ const ContentManagement = () => {
 			}
 
 			if (data && data.content) {
-				// Content is stored directly as HTML string in this row
 				setContent(data.content);
+				setEditorKey(prev => prev + 1); // Force editor to re-initialize with new content
 			}
 		} catch (error) {
 			console.warn('Error loading content:', error);
 		}
-	};
+	}, []);
 
-	const saveContent = async () => {
+	useEffect(() => {
+		loadContent();
+	}, [loadContent]);
+
+	const handleSave = async (newContent) => {
 		setSaving(true);
 		setError(null);
 		setSuccess(null);
 
 		try {
 			// Check if row with this slug exists
-			const { data: existingData, error: fetchError } = await supabase
+			const { data: existingData } = await supabase
 				.from('website_content')
 				.select('*')
 				.eq('slug', SLUG)
@@ -74,7 +56,7 @@ const ContentManagement = () => {
 				result = await supabase
 					.from('website_content')
 					.update({
-						content: content,
+						content: newContent,
 						updated_at: new Date().toISOString()
 					})
 					.eq('slug', SLUG);
@@ -84,13 +66,17 @@ const ContentManagement = () => {
 					.from('website_content')
 					.insert([{
 						slug: SLUG,
-						content: content
+						content: newContent
 					}]);
 			}
 
 			if (result.error) throw result.error;
 
+			setContent(newContent);
 			setSuccess('Content saved successfully to Supabase!');
+
+			// Clear success message after 3 seconds
+			setTimeout(() => setSuccess(null), 3000);
 
 		} catch (error) {
 			console.error('Save error:', error);
@@ -102,9 +88,17 @@ const ContentManagement = () => {
 
 	return (
 		<div className="bg-white rounded-lg shadow-lg p-6">
-			<div className="mb-6">
-				<h2 className="text-2xl font-bold text-gray-900 mb-2">Content Management</h2>
-				<p className="text-gray-600">Create and manage content that will be displayed above the FAQ section on your website.</p>
+			<div className="mb-6 flex justify-between items-center">
+				<div>
+					<h2 className="text-2xl font-bold text-gray-900 mb-2">Content Management</h2>
+					<p className="text-gray-600">Create and manage content that will be displayed above the FAQ section on your website.</p>
+				</div>
+				<button
+					onClick={loadContent}
+					className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors h-fit"
+				>
+					Reset to Saved
+				</button>
 			</div>
 
 			{success && (
@@ -120,28 +114,13 @@ const ContentManagement = () => {
 			)}
 
 			<div className="main-container">
-				<FroalaEditorComponent
-					tag='textarea'
-					model={content}
-					onModelChange={setContent}
-					config={froalaConfig}
+				{/* Using key to force re-render when content is reloaded from server */}
+				<QuillEditor
+					key={editorKey}
+					initialContent={content}
+					onSave={handleSave}
+					isSaving={saving}
 				/>
-			</div>
-
-			<div className="mt-6 flex justify-end space-x-4">
-				<button
-					onClick={loadContent}
-					className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-				>
-					Reset
-				</button>
-				<button
-					onClick={saveContent}
-					disabled={saving}
-					className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-				>
-					{saving ? 'Saving...' : 'Save Content'}
-				</button>
 			</div>
 		</div>
 	);
