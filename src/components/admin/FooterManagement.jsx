@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Save, Layout, Plus, Trash2, ExternalLink, CheckCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { 
-  FaFacebook, 
-  FaInstagram, 
-  FaTwitter, 
-  FaYoutube, 
-  FaLinkedin, 
-  FaPinterest, 
-  FaReddit, 
-  FaTiktok, 
-  FaTelegram, 
-  FaWhatsapp 
+import {
+  FaFacebook,
+  FaInstagram,
+  FaTwitter,
+  FaYoutube,
+  FaLinkedin,
+  FaPinterest,
+  FaReddit,
+  FaTiktok,
+  FaTelegram,
+  FaWhatsapp
 } from 'react-icons/fa';
 
 // Icon mapping for React Icons
@@ -116,24 +116,23 @@ const FooterManagement = () => {
   // Save changes
   const handleSave = async () => {
     setIsSaving(true);
-    
+
     try {
       // Save to localStorage
       localStorage.setItem('socialLinks', JSON.stringify(socialLinks));
-      
+
       // Dispatch custom event for real-time updates
       window.dispatchEvent(new CustomEvent('socialLinksChanged', {
         detail: { links: socialLinks }
       }));
-      
+
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       toast.success('Social media links saved successfully!');
       setHasChanges(false);
-      
+
     } catch (error) {
-      console.error('Error saving social links:', error);
       toast.error('Failed to save changes. Please try again.');
     } finally {
       setIsSaving(false);
@@ -166,7 +165,7 @@ const FooterManagement = () => {
               <Plus className="w-6 h-6 text-white" />
             </div>
           </div>
-          
+
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-lg font-semibold text-gray-900">Add Social Media Link</h3>
@@ -175,7 +174,7 @@ const FooterManagement = () => {
                 <span className="text-sm text-green-600 font-medium">Live</span>
               </div>
             </div>
-            
+
             <p className="text-gray-600 mb-6">
               Select a social media platform and enter the URL to add it to your website footer.
             </p>
@@ -271,7 +270,7 @@ const FooterManagement = () => {
                 .filter(link => iconMap[link.icon]) // Filter out invalid icons first
                 .map((link) => {
                   const Icon = iconMap[link.icon];
-                  
+
                   return (
                     <motion.div
                       key={link.id}
@@ -291,7 +290,7 @@ const FooterManagement = () => {
                             <p className="text-xs text-gray-500 truncate max-w-32">{link.url}</p>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center space-x-2">
                           <motion.a
                             href={link.url}
@@ -303,7 +302,7 @@ const FooterManagement = () => {
                           >
                             <ExternalLink className="w-4 h-4" />
                           </motion.a>
-                          
+
                           <motion.button
                             onClick={() => handleDeleteLink(link.id)}
                             whileHover={{ scale: 1.1 }}

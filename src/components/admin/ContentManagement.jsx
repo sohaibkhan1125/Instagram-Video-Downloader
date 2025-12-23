@@ -79,7 +79,6 @@ const ContentManagement = () => {
 			setTimeout(() => setSuccess(null), 3000);
 
 		} catch (error) {
-			console.error('Save error:', error);
 			setError('Error saving content: ' + error.message);
 		} finally {
 			setSaving(false);

@@ -1,18 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster, toast } from 'react-hot-toast';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import PreviewCard from './components/PreviewCard';
-import HowItWorks from './components/HowItWorks';
-import ContentSection from './components/ContentSection';
-import FAQs from './components/FAQs';
 import Footer from './components/Footer';
 import MaintenanceMode from './components/MaintenanceMode';
-import AdminRoutes from './components/admin/AdminRoutes';
 import apiClient from './lib/apiClient';
 import downloadHelper from './lib/downloadHelper';
+
+// Lazy load heavy components for better performance
+const AdminRoutes = lazy(() => import('./components/admin/AdminRoutes'));
+const HowItWorks = lazy(() => import('./components/HowItWorks'));
+const ContentSection = lazy(() => import('./components/ContentSection'));
+const FAQs = lazy(() => import('./components/FAQs'));
 
 function App() {
   const [videoData, setVideoData] = useState(null);
@@ -45,7 +47,6 @@ function App() {
       setVideoData(data);
       toast.success('Video preview loaded successfully!');
     } catch (err) {
-      console.error('Error fetching video:', err);
       setError(err.message);
       toast.error(err.message);
     } finally {
@@ -80,7 +81,6 @@ function App() {
       setIsDownloading(false);
       setDownloadProgress(0);
     } catch (err) {
-      console.error('Download error:', err);
       toast.error('Download failed. Please try again.');
       setIsDownloading(false);
       setDownloadProgress(0);
@@ -95,9 +95,9 @@ function App() {
   // Auto scroll to preview when video data loads
   useEffect(() => {
     if (videoData && previewRef.current) {
-      previewRef.current.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center' 
+      previewRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
       });
     }
   }, [videoData]);
@@ -129,88 +129,94 @@ function App() {
             },
           }}
         />
-        
-        <Routes>
-          {/* Admin Routes */}
-          <Route path="/admin/*" element={<AdminRoutes />} />
-          
-          {/* Main App Route */}
-          <Route path="/*" element={
-            <>
-              <MaintenanceMode />
-              <Header />
-              
-              <main>
-                <Hero 
-                  onUrlSubmit={handleUrlSubmit}
-                  isLoading={isLoading}
-                />
-                
-                {/* Preview Section */}
-                <AnimatePresence>
-                  {videoData && (
-                    <motion.section
-                      ref={previewRef}
-                      initial={{ opacity: 0, y: 50 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -50 }}
-                      transition={{ duration: 0.6 }}
-                      className="py-16 bg-gray-50"
-                    >
-                      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <PreviewCard
-                          videoData={videoData}
-                          onDownload={handleDownload}
-                          isDownloading={isDownloading}
-                          downloadProgress={downloadProgress}
-                          selectedType={selectedType}
-                        />
-                      </div>
-                    </motion.section>
-                  )}
-                </AnimatePresence>
 
-                {/* Error State */}
-                <AnimatePresence>
-                  {error && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="py-16 bg-red-50"
-                    >
-                      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                        <div className="bg-white rounded-2xl p-8 shadow-lg">
-                          <h3 className="text-2xl font-bold text-red-600 mb-4">
-                            Oops! Something went wrong
-                          </h3>
-                          <p className="text-gray-600 mb-6">{error}</p>
-                          <button
-                            onClick={() => {
-                              setError('');
-                              setVideoData(null);
-                            }}
-                            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
-                          >
-                            Try Again
-                          </button>
+        <Suspense fallback={
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+          </div>
+        }>
+          <Routes>
+            {/* Admin Routes */}
+            <Route path="/admin/*" element={<AdminRoutes />} />
+
+            {/* Main App Route */}
+            <Route path="/*" element={
+              <>
+                <MaintenanceMode />
+                <Header />
+
+                <main>
+                  <Hero
+                    onUrlSubmit={handleUrlSubmit}
+                    isLoading={isLoading}
+                  />
+
+                  {/* Preview Section */}
+                  <AnimatePresence>
+                    {videoData && (
+                      <motion.section
+                        ref={previewRef}
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -50 }}
+                        transition={{ duration: 0.6 }}
+                        className="py-16 bg-gray-50"
+                      >
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                          <PreviewCard
+                            videoData={videoData}
+                            onDownload={handleDownload}
+                            isDownloading={isDownloading}
+                            downloadProgress={downloadProgress}
+                            selectedType={selectedType}
+                          />
                         </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      </motion.section>
+                    )}
+                  </AnimatePresence>
 
-                <HowItWorks />
-                <ContentSection />
-                <FAQs />
-              </main>
-              
-              <Footer />
-            </>
-          } />
-        </Routes>
+                  {/* Error State */}
+                  <AnimatePresence>
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="py-16 bg-red-50"
+                      >
+                        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                          <div className="bg-white rounded-2xl p-8 shadow-lg">
+                            <h3 className="text-2xl font-bold text-red-600 mb-4">
+                              Oops! Something went wrong
+                            </h3>
+                            <p className="text-gray-600 mb-6">{error}</p>
+                            <button
+                              onClick={() => {
+                                setError('');
+                                setVideoData(null);
+                              }}
+                              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-200"
+                            >
+                              Try Again
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <HowItWorks />
+                  <ContentSection />
+                  <FAQs />
+                </main>
+
+                <Footer />
+              </>
+            } />
+          </Routes>
+        </Suspense>
       </div>
-    </Router>
+    </Router >
   );
 }
 

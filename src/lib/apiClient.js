@@ -82,11 +82,11 @@ class InstagramDownloader {
     // Instagram pattern
     const instagramMatch = url.match(/\/(p|reel|tv)\/([A-Za-z0-9_-]+)/);
     if (instagramMatch) return instagramMatch[2];
-    
+
     // TikTok pattern
     const tiktokMatch = url.match(/\/video\/(\d+)/);
     if (tiktokMatch) return tiktokMatch[1];
-    
+
     return null;
   }
 
@@ -99,11 +99,11 @@ class InstagramDownloader {
     // Instagram pattern
     const instagramMatch = url.match(/instagram\.com\/([^/]+)\/(p|reel|tv)\//);
     if (instagramMatch) return instagramMatch[1];
-    
+
     // TikTok pattern
     const tiktokMatch = url.match(/tiktok\.com\/@([^/]+)\/video\//);
     if (tiktokMatch) return tiktokMatch[1];
-    
+
     return null;
   }
 
@@ -118,12 +118,12 @@ class InstagramDownloader {
         throw new Error('Invalid Instagram/TikTok URL format');
       }
 
-      console.log('Fetching video data for:', url);
+
       return await this.fetchFromNewAPI(url);
 
     } catch (error) {
-      console.error('API Error:', error);
-      
+
+
       if (error.message.includes('Invalid Instagram URL')) {
         throw new Error('Please enter a valid Instagram or TikTok URL');
       } else if (error.message.includes('HTTP error! status: 403')) {
@@ -173,7 +173,7 @@ class InstagramDownloader {
    * Parse new API response format
    */
   parseNewAPIResponse(data, url) {
-    console.log('New API Response:', data);
+
 
     // Extract username from URL if not in response
     const extractedUsername = this.extractUsernameFromUrl(url);
@@ -209,11 +209,11 @@ class InstagramDownloader {
     }
 
     if (result.qualities.length === 0) {
-      console.error('No valid media URLs found. Response structure:', JSON.stringify(data, null, 2));
+
       throw new Error('No media URLs found in response. Please check if the post contains downloadable content.');
     }
 
-    console.log(`Successfully fetched data for ${result.username}: ${result.qualities.length} quality options`);
+
     return result;
   }
 
@@ -299,17 +299,17 @@ class InstagramDownloader {
   async downloadVideo(mediaUrl, filename, onProgress) {
     try {
       // Check if URL is from TikTok/Instagram (likely CORS-restricted)
-      const isCorsRestricted = mediaUrl.includes('tiktokcdn.com') || 
-                               mediaUrl.includes('tokcdn.com') || 
-                               mediaUrl.includes('instagram.com') ||
-                               mediaUrl.includes('fbcdn.net');
-      
+      const isCorsRestricted = mediaUrl.includes('tiktokcdn.com') ||
+        mediaUrl.includes('tokcdn.com') ||
+        mediaUrl.includes('instagram.com') ||
+        mediaUrl.includes('fbcdn.net');
+
       if (isCorsRestricted) {
         // For CORS-restricted URLs, use direct download approach
         this.directDownload(mediaUrl, filename, onProgress);
         return;
       }
-      
+
       // For other URLs, try fetch first
       try {
         const response = await fetch(mediaUrl, {
@@ -317,7 +317,7 @@ class InstagramDownloader {
           mode: 'cors',
           credentials: 'omit'
         });
-        
+
         if (response.ok) {
           const contentLength = response.headers.get('content-length');
           const total = parseInt(contentLength, 10);
@@ -328,12 +328,12 @@ class InstagramDownloader {
 
           while (true) {
             const { done, value } = await reader.read();
-            
+
             if (done) break;
-            
+
             chunks.push(value);
             loaded += value.length;
-            
+
             if (total > 0 && onProgress) {
               const percent = Math.round((loaded / total) * 100);
               onProgress(percent);
@@ -342,34 +342,34 @@ class InstagramDownloader {
 
           // Create blob from chunks
           const blob = new Blob(chunks, { type: response.headers.get('content-type') || 'video/mp4' });
-          
+
           // Create download link and trigger download
           const blobUrl = URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = blobUrl;
           link.download = filename;
           link.style.display = 'none';
-          
+
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-          
+
           // Clean up blob URL after a delay
           setTimeout(() => {
             URL.revokeObjectURL(blobUrl);
           }, 1000);
-          
+
           if (onProgress) onProgress(100);
           return;
         }
       } catch (fetchError) {
-        console.warn('Fetch method failed, using direct download:', fetchError.message);
+
         this.directDownload(mediaUrl, filename, onProgress);
         return;
       }
 
     } catch (error) {
-      console.error('Download error:', error);
+
       // Fallback: Open URL in new tab
       window.open(mediaUrl, '_blank');
       throw new Error(`Download failed: ${error.message}`);
@@ -389,25 +389,25 @@ class InstagramDownloader {
     link.download = filename;
     link.target = '_blank';
     link.style.display = 'none';
-    
+
     // Add to DOM temporarily
     document.body.appendChild(link);
-    
+
     // Set up progress tracking
     if (onProgress) {
       onProgress(10); // Initial progress
-      
+
       // Simulate progress since we can't track direct downloads
       const progressInterval = setInterval(() => {
         const currentProgress = Math.min(90, Math.random() * 20 + 70);
         onProgress(currentProgress);
       }, 500);
-      
+
       // Complete after a delay
       setTimeout(() => {
         clearInterval(progressInterval);
         onProgress(100);
-        
+
         // Clean up link
         setTimeout(() => {
           document.body.removeChild(link);
@@ -419,7 +419,7 @@ class InstagramDownloader {
         document.body.removeChild(link);
       }, 3000);
     }
-    
+
     // Trigger download
     link.click();
   }

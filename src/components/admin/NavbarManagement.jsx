@@ -14,13 +14,13 @@ const NavbarManagement = () => {
   useEffect(() => {
     const savedTitle = localStorage.getItem('websiteTitle');
     const savedLogo = localStorage.getItem('websiteLogo');
-    
+
     if (savedTitle) {
       setWebsiteTitle(savedTitle);
     } else {
       setWebsiteTitle('InstaDownloader'); // Default title
     }
-    
+
     if (savedLogo) {
       setLogoPreview(savedLogo);
     }
@@ -42,7 +42,7 @@ const NavbarManagement = () => {
         toast.error('Please select a valid image file');
         return;
       }
-      
+
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast.error('Image size must be less than 5MB');
@@ -50,7 +50,7 @@ const NavbarManagement = () => {
       }
 
       setLogoFile(file);
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -71,11 +71,11 @@ const NavbarManagement = () => {
   // Save changes
   const handleSave = async () => {
     setIsSaving(true);
-    
+
     try {
       // Save title to localStorage
       localStorage.setItem('websiteTitle', websiteTitle);
-      
+
       // Save logo if uploaded
       if (logoFile) {
         const reader = new FileReader();
@@ -87,27 +87,26 @@ const NavbarManagement = () => {
         // Remove logo from localStorage if deleted
         localStorage.removeItem('websiteLogo');
       }
-      
+
       // Update document title
       document.title = websiteTitle;
-      
+
       // Dispatch custom events for real-time updates
       window.dispatchEvent(new CustomEvent('websiteTitleChanged', {
         detail: { title: websiteTitle }
       }));
-      
+
       window.dispatchEvent(new CustomEvent('websiteLogoChanged', {
         detail: { logo: logoPreview }
       }));
-      
+
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       toast.success('Changes saved successfully!');
       setHasChanges(false);
-      
+
     } catch (error) {
-      console.error('Error saving changes:', error);
       toast.error('Failed to save changes. Please try again.');
     } finally {
       setIsSaving(false);
@@ -140,7 +139,7 @@ const NavbarManagement = () => {
               <Type className="w-6 h-6 text-white" />
             </div>
           </div>
-          
+
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-lg font-semibold text-gray-900">Website Title</h3>
@@ -149,7 +148,7 @@ const NavbarManagement = () => {
                 <span className="text-sm text-green-600 font-medium">Live</span>
               </div>
             </div>
-            
+
             <p className="text-gray-600 mb-4">
               Update your website title. This will change the title in the navbar, footer, and browser tab.
             </p>
@@ -192,7 +191,7 @@ const NavbarManagement = () => {
               <Image className="w-6 h-6 text-white" />
             </div>
           </div>
-          
+
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-lg font-semibold text-gray-900">Website Logo</h3>
@@ -201,7 +200,7 @@ const NavbarManagement = () => {
                 <span className="text-sm text-green-600 font-medium">Live</span>
               </div>
             </div>
-            
+
             <p className="text-gray-600 mb-4">
               Upload a new logo for your website. The logo will appear in the navbar and footer.
             </p>
@@ -223,7 +222,7 @@ const NavbarManagement = () => {
                       className="hidden"
                     />
                   </label>
-                  
+
                   {logoPreview && (
                     <button
                       onClick={handleDeleteLogo}

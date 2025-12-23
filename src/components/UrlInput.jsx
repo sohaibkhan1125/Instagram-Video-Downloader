@@ -26,7 +26,7 @@ const UrlInput = ({ onUrlSubmit, isLoading }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!url.trim()) {
       setError('Please enter an Instagram or TikTok URL');
       return;
@@ -34,18 +34,18 @@ const UrlInput = ({ onUrlSubmit, isLoading }) => {
 
     setIsValidating(true);
     const isValid = await validateUrl(url);
-    
+
     if (isValid) {
       onUrlSubmit(url.trim(), selectedType);
     }
-    
+
     setIsValidating(false);
   };
 
   const handleUrlChange = (e) => {
     const newUrl = e.target.value;
     setUrl(newUrl);
-    
+
     // Clear error when user starts typing
     if (error) {
       setError('');
@@ -60,7 +60,7 @@ const UrlInput = ({ onUrlSubmit, isLoading }) => {
         setError('');
       }
     } catch (err) {
-      console.error('Failed to read clipboard:', err);
+      // Silent fail - clipboard access might be denied
     }
   };
 
@@ -108,17 +108,16 @@ const UrlInput = ({ onUrlSubmit, isLoading }) => {
             value={url}
             onChange={handleUrlChange}
             placeholder={getPlaceholder()}
-            className={`w-full pl-12 pr-10 py-4 text-lg border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 shadow-lg ${
-              error 
-                ? 'border-red-300 bg-red-50' 
+            className={`w-full pl-12 pr-10 py-4 text-lg border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 shadow-lg ${error
+                ? 'border-red-300 bg-red-50'
                 : 'border-gray-200 bg-white'
-            }`}
+              }`}
             disabled={isLoading || isValidating}
             aria-label="Instagram URL input"
             aria-describedby={error ? "url-error" : "url-help"}
             aria-invalid={!!error}
           />
-          
+
           {/* Paste/Clear Icon */}
           <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
             {url ? (
@@ -155,11 +154,10 @@ const UrlInput = ({ onUrlSubmit, isLoading }) => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setSelectedType(option.id)}
-                className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-lg border-2 transition-all duration-200 ${
-                  selectedType === option.id
+                className={`flex items-center justify-center space-x-2 py-3 px-3 rounded-lg border-2 transition-all duration-200 ${selectedType === option.id
                     ? 'border-purple-500 bg-purple-50 text-purple-700 shadow-md'
                     : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:shadow-sm'
-                }`}
+                  }`}
               >
                 <span className="text-lg">{option.emoji}</span>
                 <IconComponent className="w-4 h-4" />

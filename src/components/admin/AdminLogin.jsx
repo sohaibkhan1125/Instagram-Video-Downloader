@@ -29,9 +29,8 @@ const AdminLogin = ({ onLoginSuccess }) => {
       toast.success('Login successful!');
       onLoginSuccess();
     } catch (error) {
-      console.error('Login error:', error);
       let errorMessage = 'Login failed. Please try again.';
-      
+
       switch (error.code) {
         case 'auth/user-not-found':
           errorMessage = 'No account found with this email.';
@@ -48,7 +47,7 @@ const AdminLogin = ({ onLoginSuccess }) => {
         default:
           errorMessage = error.message;
       }
-      
+
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);

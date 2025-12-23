@@ -61,7 +61,7 @@ const HeroManagement = () => {
   // Save changes
   const handleSave = async () => {
     setIsSaving(true);
-    
+
     try {
       // Check if record exists
       const { data: existingData, error: fetchError } = await supabase
@@ -92,12 +92,11 @@ const HeroManagement = () => {
       }
 
       if (result.error) throw result.error;
-      
+
       toast.success('Hero section updated successfully!');
       setHasChanges(false);
-      
+
     } catch (error) {
-      console.error('Error saving hero section:', error);
       toast.error('Failed to save changes: ' + error.message);
     } finally {
       setIsSaving(false);
@@ -130,7 +129,7 @@ const HeroManagement = () => {
               <Type className="w-6 h-6 text-white" />
             </div>
           </div>
-          
+
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-lg font-semibold text-gray-900">Hero Title</h3>
@@ -139,7 +138,7 @@ const HeroManagement = () => {
                 <span className="text-sm text-green-600 font-medium">Live</span>
               </div>
             </div>
-            
+
             <p className="text-gray-600 mb-4">
               Update your hero section title. This is the main heading that appears at the top of your website.
             </p>
@@ -189,7 +188,7 @@ const HeroManagement = () => {
               <FileText className="w-6 h-6 text-white" />
             </div>
           </div>
-          
+
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-lg font-semibold text-gray-900">Hero Description</h3>
@@ -198,7 +197,7 @@ const HeroManagement = () => {
                 <span className="text-sm text-green-600 font-medium">Live</span>
               </div>
             </div>
-            
+
             <p className="text-gray-600 mb-4">
               Update your hero section description. This appears below the title and describes your service.
             </p>
