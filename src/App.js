@@ -7,6 +7,7 @@ import Hero from './components/Hero';
 import PreviewCard from './components/PreviewCard';
 import Footer from './components/Footer';
 import MaintenanceMode from './components/MaintenanceMode';
+import SEO from './components/SEO';
 import apiClient from './lib/apiClient';
 import downloadHelper from './lib/downloadHelper';
 
@@ -142,6 +143,7 @@ function App() {
             {/* Main App Route */}
             <Route path="/*" element={
               <>
+                <SEO />
                 <MaintenanceMode />
                 <Header />
 
